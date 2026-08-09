@@ -1,0 +1,56 @@
+spring:
+  datasource:
+    url: ${LOCAL_URL_NOTIFICATION}
+    username: ${LOCAL_USER}
+    password: ${LOCAL_PASSWORD}
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+      idle-timeout: 300000
+      connection-timeout: 30000
+      max-lifetime: 1800000
+      leak-detection-threshold: 30000
+      pool-name: HikariPool-Notifications
+      data-source-properties:
+        prepareThreshold: 0
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  cloud:
+    consul:
+      host: ${CONSUL_HOST:consul}
+      port: ${CONSUL_PORT:8500}
+      discovery:
+        register: true
+        health-check-path: /actuator/health
+        prefer-ip-address: false
+        instance-id: ${spring.application.name}
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          timeout: 5000
+          connectiontimeout: 5000
+          writetimeout: 5000
+    default-encoding: UTF-8
+
+notificaciones:
+  email:
+    enabled: ${MAIL_ENABLED:true}
+  whatsapp:
+    enabled: ${WHATSAPP_ENABLED:false}
+    provider: ${WHATSAPP_PROVIDER:mock}
+    twilio:
+      account-sid: ${TWILIO_ACCOUNT_SID:}
+      auth-token: ${TWILIO_AUTH_TOKEN:}
+      from-number: ${TWILIO_FROM_NUMBER:}
