@@ -1,6 +1,5 @@
 package com.pulse_gym.ms_notifications.services;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.pulse_gym.lb_common.entity.notification.PlantillaDisenoEmail;
-import com.pulse_gym.lb_common.enums.EnumCanalNotificacion;
 import com.pulse_gym.lb_common.enums.EnumEventoAsociado;
 import com.pulse_gym.ms_notifications.repository.PlantillaDisenoEmailRepository;
 
@@ -94,7 +92,7 @@ public class DisenoEmailService {
     }
 
     /**
-     * Genera el HTML del header con las variables reemplazadas
+     * Genera el HTML del header con las variables reemplazadas (Estilo idéntico a Auth Service)
      */
     private String generarHeader(PlantillaDisenoEmail diseno, Map<String, Object> contexto) {
         String header = String.format("""
@@ -114,7 +112,7 @@ public class DisenoEmailService {
                 """,
                 diseno.getColorPrincipal(),
                 diseno.getColorSecundario(),
-                diseno.getColorTextoHeader(),
+                diseno.getColorTextoHeader() != null ? diseno.getColorTextoHeader() : "#ffffff",
                 diseno.getTituloHeader(),
                 diseno.getSubtituloHeader()
         );
@@ -133,31 +131,37 @@ public class DisenoEmailService {
                     text-align: center;
                     border-top: 1px solid #e8edf2;
                 ">
-                    <p style="color: %s; font-size: 11px; margin: 5px 0;">
+                    <div style="color: %s; font-size: 11px; margin: 5px 0;">
                         %s
-                    </p>
-                    <p style="color: %s; font-size: 11px; margin: 5px 0;">
+                    </div>
+                    <div style="color: %s; font-size: 11px; margin: 5px 0;">
                         %s
-                    </p>
+                    </div>
+                    <div style="color: %s; font-size: 11px; margin: 5px 0;">
+                        <span style="color: %s; text-decoration: none; font-weight: 600;">Pulse Gym</span> - Donde los sueños se convierten en metas
+                    </div>
                 </div>
                 """,
-                diseno.getColorFondoFooter(),
-                diseno.getColorTextoFooter(),
+                diseno.getColorFondoFooter() != null ? diseno.getColorFondoFooter() : "#f8f9fc",
+                diseno.getColorTextoFooter() != null ? diseno.getColorTextoFooter() : "#9aabbb",
                 diseno.getTextoFooter(),
-                diseno.getColorTextoFooter(),
-                diseno.getTextoFooterSecundario()
+                diseno.getColorTextoFooter() != null ? diseno.getColorTextoFooter() : "#9aabbb",
+                diseno.getTextoFooterSecundario(),
+                diseno.getColorTextoFooter() != null ? diseno.getColorTextoFooter() : "#9aabbb",
+                diseno.getColorPrincipal()
         );
         
         return reemplazarVariables(footer, contexto);
     }
 
     /**
-     * Construye el HTML completo con estilos y estructura
+     * Construye el HTML completo con estilos, sombras y estructura limpia
      */
     private String construirHtmlCompleto(String header, String contenido, String footer, 
             PlantillaDisenoEmail diseno) {
         
-        String colorFondo = diseno.getColorFondoContenido();
+        String colorFondo = diseno.getColorFondoContenido() != null ? diseno.getColorFondoContenido() : "#ffffff";
+        String colorTexto = diseno.getColorTextoContenido() != null ? diseno.getColorTextoContenido() : "#5d6d7e";
         
         return String.format("""
                 <!DOCTYPE html>
@@ -186,11 +190,11 @@ public class DisenoEmailService {
                     ">
                         %s
 
-                        <div class="content" style="
+                        <div style="
                             padding: 40px 35px;
                             background-color: %s;
                         ">
-                            <div class="contenido-mensaje" style="
+                            <div style="
                                 color: %s;
                                 font-size: 15px;
                                 line-height: 1.6;
@@ -204,17 +208,17 @@ public class DisenoEmailService {
                 </body>
                 </html>
                 """,
-                diseno.getColorTextoContenido(),
+                colorTexto,
                 header,
                 colorFondo,
-                diseno.getColorTextoContenido(),
+                colorTexto,
                 contenido,
                 footer
         );
     }
 
     /**
-     * Reemplaza las variables en el texto dado
+     * Reemplaza las variables en el texto dado (Soporta llaves dobles {{var}} y simples {var})
      */
     private String reemplazarVariables(String texto, Map<String, Object> contexto) {
         if (texto == null || texto.isEmpty()) {
@@ -236,7 +240,7 @@ public class DisenoEmailService {
      * Extrae las variables de una plantilla de diseño
      */
     public Set<String> extraerVariables(String contenido) {
-        java.util.Set<String> variables = new java.util.HashSet<>();
+        Set<String> variables = new java.util.HashSet<>();
         if (contenido == null || contenido.isEmpty()) {
             return variables;
         }
