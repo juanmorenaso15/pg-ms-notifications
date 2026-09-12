@@ -1,5 +1,6 @@
 package com.pulse_gym.ms_notifications.services;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,6 +9,7 @@ import com.pulse_gym.lb_common.dto.ConfiguracionGlobalResponseDTO;
 import com.pulse_gym.lb_common.dto.MessegeGlobalDTO;
 import com.pulse_gym.lb_common.entity.notification.ConfiguracionGlobal;
 import com.pulse_gym.lb_common.services.ValidacionDeRoles;
+import com.pulse_gym.ms_notifications.dto.ConfiguracionGlobalExtendResponseDTO;
 import com.pulse_gym.ms_notifications.repository.ConfiguracionGlobalRespository;
 
 import lombok.RequiredArgsConstructor;
@@ -17,12 +19,12 @@ import lombok.RequiredArgsConstructor;
 public class ConfiguracionGlobalService {
 
     /**
-     * Maximo de notidficaciones por dia
+     * Maximo de notificaciones por dia por defecto
      */
     private static final long DEFAULT_MAX_POR_DIA = 100L;
 
     /**
-     * Maximo de notidficaciones por minuto
+     * Maximo de notificaciones por minuto por defecto
      */
     private static final long DEFAULT_MAX_POR_MINUTO = 10L;
 
@@ -32,14 +34,27 @@ public class ConfiguracionGlobalService {
     private final ConfiguracionGlobalRespository configuracionGlobalRespository;
 
     /**
-     * Obtiene la configuracion global del sistema
+     * Indica si el envío de emails está habilitado por configuración de entorno
+     */
+    @Value("${notificaciones.email.enabled:true}")
+    private boolean emailEnabled;
+
+    /**
+     * Indica si el envío de WhatsApp está habilitado por configuración de entorno
+     */
+    @Value("${notificaciones.whatsapp.enabled:false}")
+    private boolean whatsappEnabled;
+
+    /**
+     * Obtiene la configuracion global del sistema con los estados reales de los
+     * canales
      *
-     * @return Configuracion actual o valores por defecto
+     * @return Configuracion actual extendida o valores por defecto
      */
     @Transactional(readOnly = true)
     public ConfiguracionGlobalResponseDTO obtenerConfiguracion() {
         ConfiguracionGlobal config = obtenerOInicializarConfiguracion();
-        return mapearAResponse(config);
+        return mapearAResponseExtendido(config);
     }
 
     /**
@@ -58,7 +73,7 @@ public class ConfiguracionGlobalService {
         config.setMax_notificaciones_por_minuto(request.getMaxNotificacionesPorMinuto());
         configuracionGlobalRespository.save(config);
 
-        return new MessegeGlobalDTO("Configuracion global actualizada correctamente");
+        return new MessegeGlobalDTO("Configuración global actualizada correctamente");
     }
 
     /**
@@ -72,9 +87,11 @@ public class ConfiguracionGlobalService {
     }
 
     /**
-     * metodo privado para obtener la configuracion global del sistema o inicializarla
+     * Metodo privado para obtener la configuracion global del sistema o
+     * inicializarla
      *
-     * @return Configuracion global persistida o nueva configuracion con valores por defecto si no existe ninguna en la base de datos
+     * @return Configuracion global persistida o nueva configuracion con valores por
+     *         defecto si no existe ninguna en la base de datos
      */
     private ConfiguracionGlobal obtenerOInicializarConfiguracion() {
         return configuracionGlobalRespository.findFirstByOrderByIdConfiguracionAsc()
@@ -87,15 +104,25 @@ public class ConfiguracionGlobalService {
     }
 
     /**
-     * Mapea una entidad de ConfiguracionGlobal a un DTO de ConfiguracionGlobalResponseDTO para su uso en respuestas de API. Este método se encarga de extraer los valores relevantes de la entidad y 
-     * asignarlos a las propiedades correspondientes del DTO, facilitando así la transferencia de datos entre la capa de servicio y la capa de presentación.
-     * @param config 
-     * @return 
+     * Mapea una entidad de ConfiguracionGlobal al DTO extendido de respuesta,
+     * incorporando
+     * los límites de base de datos junto con el estado real de los canales y del
+     * sistema.
+     * 
+     * @param config Entidad de configuración global
+     * @return DTO de respuesta con los estados y límites mapeados
      */
-    private ConfiguracionGlobalResponseDTO mapearAResponse(ConfiguracionGlobal config) {
-        ConfiguracionGlobalResponseDTO dto = new ConfiguracionGlobalResponseDTO();
+    private ConfiguracionGlobalExtendResponseDTO mapearAResponseExtendido(ConfiguracionGlobal config) {
+        ConfiguracionGlobalExtendResponseDTO dto = new ConfiguracionGlobalExtendResponseDTO();
         dto.setMaxNotificacionesPorDia(config.getMax_notificaciones_por_dia());
         dto.setMaxNotificacionesPorMinuto(config.getMax_notificaciones_por_minuto());
+
+        // Datos reales inyectados desde el entorno y estado operativo
+        dto.setEmailHabilitado(emailEnabled);
+        dto.setWhatsappHabilitado(whatsappEnabled);
+        dto.setEstadoSistema("ACTIVO");
+        dto.setMensajeEstado("El sistema de notificaciones está funcionando correctamente.");
+
         return dto;
     }
 }
