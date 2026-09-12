@@ -43,7 +43,7 @@ public class PreferenciaUsuarioService {
      */
     @Transactional(readOnly = true)
     public PreferenciaUsuarioResponseDTO obtenerMisPreferencias(Long usuarioId, String userRol) {
-        ValidacionDeRoles.validarSocio(userRol);
+        ValidacionDeRoles.validarCualquierRol(userRol);
         return mapearAResponse(obtenerOPreferenciasPorDefecto(usuarioId));
     }
 
@@ -59,7 +59,7 @@ public class PreferenciaUsuarioService {
     public PreferenciaUsuarioResponseDTO actualizarMisPreferencias(
             Long usuarioId, PreferenciaUsuarioRequestDTO request, String userRol) {
 
-        ValidacionDeRoles.validarSocio(userRol);
+        ValidacionDeRoles.validarCualquierRol(userRol);
 
         PreferenciaUsuario preferencia = preferenciaUsuarioRepository.findByIdUsuario(usuarioId)
                 .orElseGet(() -> crearPreferenciaPorDefecto(usuarioId));
