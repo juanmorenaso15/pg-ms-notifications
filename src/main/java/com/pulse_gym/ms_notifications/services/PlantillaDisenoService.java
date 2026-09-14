@@ -8,8 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.pulse_gym.lb_common.dto.MessegeGlobalDTO;
 import com.pulse_gym.lb_common.entity.notification.PlantillaDisenoEmail;
-import com.pulse_gym.lb_common.enums.EnumCanalNotificacion;
-import com.pulse_gym.lb_common.enums.EnumEventoAsociado;
 import com.pulse_gym.lb_common.services.ValidacionDeRoles;
 import com.pulse_gym.ms_notifications.repository.PlantillaDisenoEmailRepository;
 
