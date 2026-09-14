@@ -82,3 +82,11 @@ microservicio:
     url: ${USUARIOS_SERVICE_URL:http://pg-ms-users:8081}
   auth:
     url: ${AUTH_SERVICE_URL:http://pg-ms-auth:8090}
+
+whatsapp:
+  cloud:
+    enabled: ${WHATSAPP_CLOUD_ENABLED:false}
+    api-url: https://graph.facebook.com/v22.0
+    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
+    access-token: ${WHATSAPP_ACCESS_TOKEN:}
+    verify-token: ${WHATSAPP_VERIFY_TOKEN:pulse_gym_webhook_secret_2026}
