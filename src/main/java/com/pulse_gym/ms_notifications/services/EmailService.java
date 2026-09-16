@@ -32,12 +32,12 @@ public class EmailService {
     /**
      * Inyeccion de JavaMailSender para enviar emails
      */
-    private JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
 
     /**
      * Servicio de diseño dinámico de emails
      */
-    private DisenoEmailService disenoEmailService;
+    private final DisenoEmailService disenoEmailService;
 
     /**
      * Email del remitente
