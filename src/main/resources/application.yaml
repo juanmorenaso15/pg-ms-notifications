@@ -65,13 +65,6 @@ logging:
 notificaciones:
   email:
     enabled: ${MAIL_ENABLED:true}
-  whatsapp:
-    enabled: ${WHATSAPP_ENABLED:false}
-    provider: ${WHATSAPP_PROVIDER:mock}
-    twilio:
-      account-sid: ${TWILIO_ACCOUNT_SID:}
-      auth-token: ${TWILIO_AUTH_TOKEN:}
-      from-number: ${TWILIO_FROM_NUMBER:}
 
 biometric:
   jwt:
@@ -90,3 +83,4 @@ whatsapp:
     phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
     access-token: ${WHATSAPP_ACCESS_TOKEN:}
     verify-token: ${WHATSAPP_VERIFY_TOKEN:pulse_gym_webhook_secret_2026}
+    default-country-code: ${WHATSAPP_DEFAULT_COUNTRY_CODE:57}

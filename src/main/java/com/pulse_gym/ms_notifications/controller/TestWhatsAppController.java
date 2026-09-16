@@ -1,18 +1,21 @@
 package com.pulse_gym.ms_notifications.controller;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.pulse_gym.ms_notifications.services.WhatsAppService;
+import com.pulse_gym.ms_notifications.services.WhatsAppCloudService;
 
 import lombok.RequiredArgsConstructor;
 
 /**
- * Controlador REST de prueba para verificar la integración con el servicio de WhatsApp.
+ * Controlador REST de prueba para verificar la integración con WhatsApp Cloud API (Meta).
  * Este controlador está destinado exclusivamente para entornos de desarrollo y pruebas.
- * Envía un mensaje de prueba a un número predefinido para verificar que la
- * configuración de Twilio está correcta.
- * 
+ * Envía la plantilla "hello_world" (aprobada por defecto por Meta para toda app nueva)
+ * a un número predefinido, para confirmar que el token y el phone-number-id son válidos
+ * sin depender de la ventana de 24h que exige el envío de texto libre.
+ *
  * ADVERTENCIA: Este endpoint debe deshabilitarse o protegerse adecuadamente en producción.
  */
 @RestController
@@ -20,27 +23,27 @@ import lombok.RequiredArgsConstructor;
 public class TestWhatsAppController {
 
     /**
-     * Inyección del servicio de WhatsApp.
-     * Se utiliza para enviar mensajes de prueba a través de la API de Twilio.
+     * Inyección del servicio de WhatsApp Cloud API (Meta).
      */
-    private final WhatsAppService whatsAppService;
+    private final WhatsAppCloudService whatsAppCloudService;
 
     /**
-     * Envía un mensaje de prueba a un número predefinido de WhatsApp.
-     * Este endpoint se utiliza para verificar que la integración con Twilio
-     * está configurada correctamente.
-     * 
-     * El mensaje se envía al número +573248589488 (formato WhatsApp: whatsapp:+573248589488).
-     * 
+     * Envía la plantilla de prueba "hello_world" a un número predefinido de WhatsApp.
+     * Al ser una plantilla aprobada por Meta, se puede enviar en cualquier momento,
+     * a diferencia de un mensaje de texto libre que solo funciona dentro de las 24h
+     * posteriores a que el destinatario le haya escrito al número de negocio.
+     *
      * @return Cadena de texto confirmando que el mensaje fue enviado.
      *         En caso de error, retorna una excepción con el mensaje de error.
      */
     @GetMapping("/test-whatsapp")
     public String enviarPrueba() {
 
-        whatsAppService.enviarWhatsApp(
-                "whatsapp:+573248589488",
-                "Prueba Twilio desde Pulse Gym");
+        whatsAppCloudService.enviarPlantilla(
+                "+573248589488",
+                "hello_world",
+                "en_US",
+                List.of());
 
         return "Mensaje enviado";
     }

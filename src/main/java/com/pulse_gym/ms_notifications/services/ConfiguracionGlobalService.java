@@ -40,9 +40,9 @@ public class ConfiguracionGlobalService {
     private boolean emailEnabled;
 
     /**
-     * Indica si el envío de WhatsApp está habilitado por configuración de entorno
+     * Indica si el envío de WhatsApp (Cloud API - Meta) está habilitado por configuración de entorno
      */
-    @Value("${notificaciones.whatsapp.enabled:false}")
+    @Value("${whatsapp.cloud.enabled:false}")
     private boolean whatsappEnabled;
 
     /**

@@ -35,6 +35,9 @@ public class WhatsAppCloudService {
     @Value("${whatsapp.cloud.enabled:false}")
     private boolean enabled;
 
+    @Value("${whatsapp.cloud.default-country-code:57}")
+    private String defaultCountryCode;
+
     /**
      * Envía un mensaje de texto simple a un número de WhatsApp.
      * 
@@ -137,12 +140,19 @@ public class WhatsAppCloudService {
     }
 
     /**
-     * Normaliza el número de teléfono eliminando cualquier carácter que no sea un dígito.
+     * Normaliza el número de teléfono al formato que exige Meta: solo dígitos,
+     * con indicativo de país y sin "+". El perfil de usuario no obliga a guardar
+     * el indicativo, así que si el número quedó en formato local (10 dígitos)
+     * se le antepone el indicativo por defecto.
      *
      * @param telefono Número de teléfono a normalizar
      * @return Número de teléfono normalizado
      */
     private String normalizarTelefono(String telefono) {
-        return telefono.replaceAll("[^0-9]", "");
+        String soloDigitos = telefono.replaceAll("[^0-9]", "");
+        if (soloDigitos.length() == 10) {
+            return defaultCountryCode + soloDigitos;
+        }
+        return soloDigitos;
     }
 }
