@@ -50,7 +50,7 @@ public class PlantillaService {
         notificacion.setEventosAsociados(eventos);
         notificacion.setEstado(true);
         notificacion.setEliminada(false);
-        notificacion.setFechaCreacion(LocalDateTime.now());
+        notificacion.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
 
         plantillaNotificationRepository.save(notificacion);
         return new MessegeGlobalDTO("Plantilla de notificacion registrada correctamente");

@@ -31,7 +31,7 @@ public class RateLimitService {
      */
     public void validarLimiteEnvio(Long usuarioId) {
         ConfiguracionGlobal limites = configuracionGlobalService.obtenerLimitesEfectivos();
-        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime ahora = com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia();
 
         long enviadosUltimoMinuto = notificacionRepository.countEfectivosUltimoMinuto(
                 usuarioId, ahora.minusMinutes(1));

@@ -35,7 +35,7 @@ public class PlantillaDisenoService {
 
         diseno.setEliminado(false);
         diseno.setActivo(true);
-        diseno.setFechaCreacion(LocalDateTime.now());
+        diseno.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
         disenoRepository.save(diseno);
 
         return new MessegeGlobalDTO("Diseño de email creado correctamente");
@@ -116,7 +116,7 @@ public class PlantillaDisenoService {
             diseno.setActivo(datos.getActivo());
         }
 
-        diseno.setFechaActualizacion(LocalDateTime.now());
+        diseno.setFechaActualizacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
         disenoRepository.save(diseno);
 
         return new MessegeGlobalDTO("Diseño de email actualizado correctamente");
@@ -134,7 +134,7 @@ public class PlantillaDisenoService {
 
         diseno.setEliminado(true);
         diseno.setActivo(false);
-        diseno.setFechaActualizacion(LocalDateTime.now());
+        diseno.setFechaActualizacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
         disenoRepository.save(diseno);
 
         return new MessegeGlobalDTO("Diseño de email eliminado correctamente");
@@ -152,7 +152,7 @@ public class PlantillaDisenoService {
 
         diseno.setEliminado(false);
         diseno.setActivo(true);
-        diseno.setFechaActualizacion(LocalDateTime.now());
+        diseno.setFechaActualizacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
         disenoRepository.save(diseno);
 
         return new MessegeGlobalDTO("Diseño de email activado correctamente");
