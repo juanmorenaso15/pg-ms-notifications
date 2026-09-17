@@ -21,7 +21,7 @@ public class WhatsAppCloudService {
 
     private static final Logger logger = LoggerFactory.getLogger(WhatsAppCloudService.class);
 
-    private final RestTemplate restTemplate;
+    private final RestTemplate whatsAppRestTemplate;
 
     @Value("${whatsapp.cloud.api-url}")
     private String apiUrl;
@@ -119,7 +119,7 @@ public class WhatsAppCloudService {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
         try {
-            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+            ResponseEntity<String> response = whatsAppRestTemplate.postForEntity(url, request, String.class);
             if (response.getStatusCode().is2xxSuccessful()) {
                 logger.info("WhatsApp enviado a {}: {}", telefono, response.getBody());
             } else {
