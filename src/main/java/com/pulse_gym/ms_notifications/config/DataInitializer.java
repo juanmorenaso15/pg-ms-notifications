@@ -83,7 +83,7 @@ public class DataInitializer implements CommandLineRunner {
             registro.setEventosAsociados(Set.of(EnumEventoAsociado.REGISTRO_USUARIO));
             registro.setEstado(true);
             registro.setEliminada(false);
-            registro.setFechaCreacion(LocalDateTime.now());
+            registro.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
             plantillaRepository.save(registro);
             logger.info("Plantilla REGISTRO_USUARIO creada.");
         }
@@ -100,7 +100,7 @@ public class DataInitializer implements CommandLineRunner {
             login.setEventosAsociados(Set.of(EnumEventoAsociado.LOGIN_USUARIO));
             login.setEstado(true);
             login.setEliminada(false);
-            login.setFechaCreacion(LocalDateTime.now());
+            login.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
             plantillaRepository.save(login);
             logger.info("Plantilla LOGIN_USUARIO creada.");
         }
@@ -117,7 +117,7 @@ public class DataInitializer implements CommandLineRunner {
             welcome.setEventosAsociados(Set.of(EnumEventoAsociado.WELCOME));
             welcome.setEstado(true);
             welcome.setEliminada(false);
-            welcome.setFechaCreacion(LocalDateTime.now());
+            welcome.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
             plantillaRepository.save(welcome);
             logger.info("Plantilla WELCOME creada.");
         }
@@ -152,7 +152,7 @@ public class DataInitializer implements CommandLineRunner {
             registroDiseno.setTextoFooterSecundario("Este es un mensaje automático, por favor no responder a este correo");
             registroDiseno.setActivo(true);
             registroDiseno.setEliminado(false);
-            registroDiseno.setFechaCreacion(LocalDateTime.now());
+            registroDiseno.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
             disenoRepository.save(registroDiseno);
             logger.info("Diseño REGISTRO_USUARIO creado.");
         }
@@ -176,7 +176,7 @@ public class DataInitializer implements CommandLineRunner {
             loginDiseno.setTextoFooterSecundario("Si no reconoces esta actividad, contacta a soporte inmediatamente");
             loginDiseno.setActivo(true);
             loginDiseno.setEliminado(false);
-            loginDiseno.setFechaCreacion(LocalDateTime.now());
+            loginDiseno.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
             disenoRepository.save(loginDiseno);
             logger.info("Diseño LOGIN_USUARIO creado.");
         }
@@ -200,7 +200,7 @@ public class DataInitializer implements CommandLineRunner {
             welcomeDiseno.setTextoFooterSecundario("Este es un mensaje automático, por favor no responder a este correo");
             welcomeDiseno.setActivo(true);
             welcomeDiseno.setEliminado(false);
-            welcomeDiseno.setFechaCreacion(LocalDateTime.now());
+            welcomeDiseno.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
             disenoRepository.save(welcomeDiseno);
             logger.info("Diseño WELCOME creado.");
         }
@@ -224,7 +224,7 @@ public class DataInitializer implements CommandLineRunner {
             promocion.setTextoFooterSecundario("Este es un mensaje automático, por favor no responder a este correo");
             promocion.setActivo(true);
             promocion.setEliminado(false);
-            promocion.setFechaCreacion(LocalDateTime.now());
+            promocion.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
             disenoRepository.save(promocion);
             logger.info("Diseño PROMOTION creado.");
         }
@@ -248,7 +248,7 @@ public class DataInitializer implements CommandLineRunner {
             logro.setTextoFooterSecundario("Este es un mensaje automático, por favor no responder a este correo");
             logro.setActivo(true);
             logro.setEliminado(false);
-            logro.setFechaCreacion(LocalDateTime.now());
+            logro.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
             disenoRepository.save(logro);
             logger.info("Diseño ACHIEVEMENT creado.");
         }
@@ -272,7 +272,7 @@ public class DataInitializer implements CommandLineRunner {
             pago.setTextoFooterSecundario("Este es un mensaje automático, por favor no responder a este correo");
             pago.setActivo(true);
             pago.setEliminado(false);
-            pago.setFechaCreacion(LocalDateTime.now());
+            pago.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
             disenoRepository.save(pago);
             logger.info("Diseño PAYMENT_REMINDER creado.");
         }
@@ -296,7 +296,7 @@ public class DataInitializer implements CommandLineRunner {
             mantenimiento.setTextoFooterSecundario("Este es un mensaje automático, por favor no responder a este correo");
             mantenimiento.setActivo(true);
             mantenimiento.setEliminado(false);
-            mantenimiento.setFechaCreacion(LocalDateTime.now());
+            mantenimiento.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
             disenoRepository.save(mantenimiento);
             logger.info("Diseño MAINTENANCE_ALERT creado.");
         }
@@ -323,7 +323,7 @@ public class DataInitializer implements CommandLineRunner {
         diseno.setTextoFooterSecundario("Este es un mensaje automático, por favor no responder a este correo");
         diseno.setActivo(true);
         diseno.setEliminado(false);
-        diseno.setFechaCreacion(LocalDateTime.now());
+        diseno.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
         return diseno;
     }
 }

@@ -225,7 +225,7 @@ public class NotificacionService {
         notificacion.setTitulo(asuntoFinal);
         notificacion.setContenido(contenidoFinal);
         notificacion.setEstado(EnumEstadoNotificacion.PENDIENTE);
-        notificacion.setFechaEnvio(LocalDateTime.now());
+        notificacion.setFechaEnvio(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
         notificacionRepository.save(notificacion);
 
         try {
