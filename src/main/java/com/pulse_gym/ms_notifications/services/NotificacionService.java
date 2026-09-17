@@ -137,11 +137,12 @@ public class NotificacionService {
 
         Map<String, Object> contexto = construirContextoFlexible(usuario, authUser, variablesAdicionales, evento);
         String contenidoRenderizado = renderService.renderizar(plantilla.getContenido(), contexto);
+        String asuntoRenderizado = renderService.renderizar(plantilla.getTitulo(), contexto);
 
         EnvioNotificacionDTO dto = new EnvioNotificacionDTO();
         dto.setUsuarioId(usuarioAuthId);
         dto.setContenido(contenidoRenderizado);
-        dto.setAsunto(plantilla.getTitulo());
+        dto.setAsunto(asuntoRenderizado);
         dto.setCanal(canal.name());
         dto.setPlantillaId(plantillaId);
         dto.setTipoEvento(evento.name());
@@ -217,33 +218,39 @@ public class NotificacionService {
                 ? EnumEventoAsociado.valueOf(dto.getTipoEvento())
                 : EnumEventoAsociado.WELCOME;
 
-        preferenciaUsuarioService.validarPreferenciasUsuario(dto.getUsuarioId(), evento, canal);
-        rateLimitService.validarLimiteEnvio(dto.getUsuarioId());
+        if (dto.getUsuarioId() != null && dto.getUsuarioId() > 0) {
+            preferenciaUsuarioService.validarPreferenciasUsuario(dto.getUsuarioId(), evento, canal);
+            rateLimitService.validarLimiteEnvio(dto.getUsuarioId());
+        }
 
         PlantillaNotificacion plantilla = null;
         if (dto.getPlantillaId() != null) {
             plantilla = plantillaRepository.findById(dto.getPlantillaId()).orElse(null);
         }
 
+        Map<String, Object> contexto = construirContextoParaEmail(dto);
+
+        String contenidoFinal = renderService.renderizar(dto.getContenido(), contexto);
+        String asuntoFinal = renderService.renderizar(dto.getAsunto() != null ? dto.getAsunto() : "Notificacion Pulse Gym", contexto);
+
         Notificacion notificacion = new Notificacion();
         notificacion.setId_usuario(dto.getUsuarioId());
         notificacion.setId_plantilla(plantilla);
-        notificacion.setTitulo(dto.getAsunto() != null ? dto.getAsunto() : "Notificacion Pulse Gym");
-        notificacion.setContenido(dto.getContenido());
+        notificacion.setTitulo(asuntoFinal);
+        notificacion.setContenido(contenidoFinal);
         notificacion.setEstado(EnumEstadoNotificacion.PENDIENTE);
         notificacion.setFechaEnvio(LocalDateTime.now());
         notificacionRepository.save(notificacion);
 
         try {
             if (canal == EnumCanalNotificacion.EMAIL) {
-                Map<String, Object> contexto = construirContextoParaEmail(dto);
                 emailService.enviarEmailHtml(
                         dto.getDestinatario(),
-                        notificacion.getTitulo(),
-                        dto.getContenido(), evento, contexto);
+                        asuntoFinal,
+                        contenidoFinal, evento, contexto);
                 notificacion.setEstado(EnumEstadoNotificacion.ENVIADO);
             } else {
-                whatsAppCloudService.enviarTexto(dto.getDestinatario(), dto.getContenido());
+                whatsAppCloudService.enviarTexto(dto.getDestinatario(), contenidoFinal);
                 notificacion.setEstado(EnumEstadoNotificacion.ENVIADO);
             }
 
@@ -365,18 +372,26 @@ public class NotificacionService {
 
     /**
      * Construye el contexto con variables del usuario para pasar al diseño del
-     * email.
-     * Este contexto se utiliza para reemplazar variables en el header y footer del
-     * email.
+     * email, permitiendo reemplazar las variables del header y footer (como nombre, apellido, objetivo, etc.).
      *
      * @param dto DTO con los datos del envío
-     * @return Mapa con variables para el diseño del email
+     * @return Mapa con variables completas para el diseño del email
      */
     private Map<String, Object> construirContextoParaEmail(EnvioNotificacionDTO dto) {
         Map<String, Object> contexto = new HashMap<>();
 
-        if (dto.getUsuarioId() != null) {
+        if (dto.getUsuarioId() != null && dto.getUsuarioId() > 0) {
             contexto.put("usuario_id", dto.getUsuarioId());
+            try {
+                AuthUserDTO authUser = obtenerAuthUser(dto.getUsuarioId());
+                UsuarioPerfilResponseDTO usuario = null;
+                if (authUser != null && authUser.getEmail() != null) {
+                    usuario = obtenerPerfilPorEmail(authUser.getEmail());
+                }
+                contexto.putAll(construirContextoFlexible(usuario, authUser, null, null));
+            } catch (Exception e) {
+                logger.warn("No se pudieron cargar los datos completos del usuario {} para el diseño del email: {}", dto.getUsuarioId(), e.getMessage());
+            }
         }
 
         return contexto;
