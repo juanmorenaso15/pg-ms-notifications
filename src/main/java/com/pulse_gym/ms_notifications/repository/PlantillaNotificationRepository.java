@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.pulse_gym.lb_common.entity.notification.PlantillaNotificacion;
+import com.pulse_gym.lb_common.enums.EnumCanalNotificacion;
 import com.pulse_gym.lb_common.enums.EnumEventoAsociado;
 
 /**
@@ -33,4 +34,17 @@ public interface PlantillaNotificationRepository extends JpaRepository<Plantilla
      */
     List<PlantillaNotificacion> findByEventosAsociadosContainingAndEstadoTrueAndEliminadaFalse(
             EnumEventoAsociado evento);
+
+    /**
+     * Busca plantillas activas y no eliminadas asociadas a un evento y canal
+     * específicos. Se utiliza para saber si ya existe una plantilla de un canal
+     * puntual (ej. WHATSAPP) para un evento, sin verse afectado por plantillas
+     * de otros canales (ej. EMAIL) que ya existan para ese mismo evento.
+     *
+     * @param evento Evento asociado a la plantilla
+     * @param tipoPlantilla Canal de la plantilla (EMAIL o WHATSAPP)
+     * @return Lista de plantillas que coinciden con el evento y el canal
+     */
+    List<PlantillaNotificacion> findByEventosAsociadosContainingAndTipoPlantillaAndEstadoTrueAndEliminadaFalse(
+            EnumEventoAsociado evento, EnumCanalNotificacion tipoPlantilla);
 }

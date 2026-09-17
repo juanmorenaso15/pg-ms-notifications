@@ -47,10 +47,3 @@ spring:
 notificaciones:
   email:
     enabled: ${MAIL_ENABLED:true}
-  whatsapp:
-    enabled: ${WHATSAPP_ENABLED:false}
-    provider: ${WHATSAPP_PROVIDER:mock}
-    twilio:
-      account-sid: ${TWILIO_ACCOUNT_SID:}
-      auth-token: ${TWILIO_AUTH_TOKEN:}
-      from-number: ${TWILIO_FROM_NUMBER:}

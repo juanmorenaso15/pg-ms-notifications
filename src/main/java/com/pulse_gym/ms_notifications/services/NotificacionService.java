@@ -45,15 +45,10 @@ public class NotificacionService {
      * Servicio de email
      */
     private final EmailService emailService;
-    
-    /**
-     * Servicio de WhatsApp
-     */
-    private final WhatsAppService whatsAppService;
-    
+
     /**
      * Repositorio de notificaciones
-     */ 
+     */
     private final NotificacionRepository notificacionRepository;
     
     /**
@@ -87,6 +82,11 @@ public class NotificacionService {
     private final RateLimitService rateLimitService;
 
     /**
+     * Servicio de WhatsApp Cloud API (Meta)
+     */
+    private final WhatsAppCloudService whatsAppCloudService;
+
+    /**
      * Envía una notificación utilizando una plantilla con variables dinámicas.
      * Para eventos de autenticación (REGISTRO_USUARIO, LOGIN_USUARIO) no requiere
      * perfil de usuario.
@@ -114,20 +114,23 @@ public class NotificacionService {
 
         AuthUserDTO authUser = obtenerAuthUser(usuarioAuthId);
         EnumEventoAsociado evento = resolverEventoPlantilla(plantilla);
+        EnumCanalNotificacion canal = plantilla.getTipoPlantilla();
         UsuarioPerfilResponseDTO usuario = null;
 
-        if (evento != EnumEventoAsociado.REGISTRO_USUARIO &&
-                evento != EnumEventoAsociado.LOGIN_USUARIO) {
+        // Los eventos de autenticación no requieren perfil para EMAIL (el correo ya
+        // viene de auth), pero WhatsApp necesita el teléfono, que solo vive en el perfil.
+        boolean esEventoAuth = evento == EnumEventoAsociado.REGISTRO_USUARIO
+                || evento == EnumEventoAsociado.LOGIN_USUARIO;
+
+        if (!esEventoAuth || canal == EnumCanalNotificacion.WHATSAPP) {
             try {
                 usuario = obtenerPerfilPorEmail(authUser.getEmail());
             } catch (Exception e) {
                 logger.warn("No se pudo obtener perfil para evento {}: {}", evento, e.getMessage());
             }
         } else {
-            logger.info("Evento de autenticación {}, no se requiere perfil de usuario", evento);
+            logger.info("Evento de autenticación {} por EMAIL, no se requiere perfil de usuario", evento);
         }
-
-        EnumCanalNotificacion canal = plantilla.getTipoPlantilla();
 
         preferenciaUsuarioService.validarPreferenciasUsuario(usuarioAuthId, evento, canal);
         rateLimitService.validarLimiteEnvio(usuarioAuthId);
@@ -157,16 +160,19 @@ public class NotificacionService {
     }
 
     /**
-     * Envía una notificación basada en un evento, utilizando la plantilla activa
-     * configurada para dicho evento.
+     * Envía una notificación basada en un evento, utilizando todas las plantillas
+     * activas configuradas para dicho evento (puede existir una por canal, ej.
+     * EMAIL y WHATSAPP simultáneamente).
+     * Cada plantilla se envía de forma independiente: si una falla (p. ej. WhatsApp
+     * sin teléfono registrado) no impide que las demás se envíen.
      *
      * @param request DTO con los datos del evento y el usuario destino
-     * @throws RuntimeException Si no existe una plantilla activa para el evento
+     * @throws RuntimeException Si no existe ninguna plantilla activa para el evento
      *                          especificado
      */
     @Transactional
     public void enviarNotificacionPorEvento(EnvioEventoNotificacionDTO request) {
-        logger.info("Buscando plantilla para evento: {} y usuario: {}", request.getEvento(), request.getUsuarioId());
+        logger.info("Buscando plantillas para evento: {} y usuario: {}", request.getEvento(), request.getUsuarioId());
 
         List<PlantillaNotificacion> plantillas = plantillaRepository
                 .findByEventosAsociadosContainingAndEstadoTrueAndEliminadaFalse(request.getEvento());
@@ -177,14 +183,22 @@ public class NotificacionService {
             throw new RuntimeException("No existe plantilla activa para el evento: " + request.getEvento());
         }
 
-        PlantillaNotificacion plantilla = plantillas.get(0);
-        logger.info("Plantilla encontrada: {} (ID: {}) para evento: {}",
-                plantilla.getNombre(), plantilla.getIdPlantilla(), request.getEvento());
+        for (PlantillaNotificacion plantilla : plantillas) {
+            try {
+                logger.info("Plantilla encontrada: {} (ID: {}, canal: {}) para evento: {}",
+                        plantilla.getNombre(), plantilla.getIdPlantilla(), plantilla.getTipoPlantilla(),
+                        request.getEvento());
 
-        enviarNotificacionConPlantilla(
-                plantilla.getIdPlantilla(),
-                request.getUsuarioId(),
-                request.getVariablesAdicionales());
+                enviarNotificacionConPlantilla(
+                        plantilla.getIdPlantilla(),
+                        request.getUsuarioId(),
+                        request.getVariablesAdicionales());
+            } catch (Exception e) {
+                logger.error("Error al enviar notificacion con plantilla {} (canal {}) para evento {}: {}",
+                        plantilla.getIdPlantilla(), plantilla.getTipoPlantilla(), request.getEvento(),
+                        e.getMessage());
+            }
+        }
     }
 
     /**
@@ -236,7 +250,7 @@ public class NotificacionService {
                         contenidoFinal, evento, contexto);
                 notificacion.setEstado(EnumEstadoNotificacion.ENVIADO);
             } else {
-                whatsAppService.enviarWhatsApp(dto.getDestinatario(), contenidoFinal);
+                whatsAppCloudService.enviarTexto(dto.getDestinatario(), contenidoFinal);
                 notificacion.setEstado(EnumEstadoNotificacion.ENVIADO);
             }
 

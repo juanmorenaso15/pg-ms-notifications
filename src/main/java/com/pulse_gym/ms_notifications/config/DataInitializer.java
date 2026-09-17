@@ -105,6 +105,25 @@ public class DataInitializer implements CommandLineRunner {
             logger.info("Plantilla LOGIN_USUARIO creada.");
         }
 
+        // 2b. LOGIN_USUARIO (WhatsApp) - se valida por canal, no solo por evento,
+        // porque ya puede existir la plantilla de EMAIL del bloque anterior.
+        if (plantillaRepository.findByEventosAsociadosContainingAndTipoPlantillaAndEstadoTrueAndEliminadaFalse(
+                EnumEventoAsociado.LOGIN_USUARIO, EnumCanalNotificacion.WHATSAPP).isEmpty()) {
+            PlantillaNotificacion loginWhatsapp = new PlantillaNotificacion();
+            loginWhatsapp.setNombre("Login de Usuario WhatsApp");
+            loginWhatsapp.setTitulo("Inicio de sesion detectado");
+            loginWhatsapp.setDescripcion("Notificacion de inicio de sesion por WhatsApp");
+            loginWhatsapp.setContenido("Hola {username}! Detectamos un inicio de sesion en tu cuenta de Pulse Gym ({email}). Si no fuiste tu, contacta a soporte de inmediato.");
+            loginWhatsapp.setTipoPlantilla(EnumCanalNotificacion.WHATSAPP);
+            loginWhatsapp.setEventoAsociado(EnumEventoAsociado.LOGIN_USUARIO);
+            loginWhatsapp.setEventosAsociados(Set.of(EnumEventoAsociado.LOGIN_USUARIO));
+            loginWhatsapp.setEstado(true);
+            loginWhatsapp.setEliminada(false);
+            loginWhatsapp.setFechaCreacion(LocalDateTime.now());
+            plantillaRepository.save(loginWhatsapp);
+            logger.info("Plantilla LOGIN_USUARIO (WhatsApp) creada.");
+        }
+
         // 3. WELCOME
         if (plantillaRepository.findByEventosAsociadosContainingAndEstadoTrueAndEliminadaFalse(EnumEventoAsociado.WELCOME).isEmpty()) {
             PlantillaNotificacion welcome = new PlantillaNotificacion();
