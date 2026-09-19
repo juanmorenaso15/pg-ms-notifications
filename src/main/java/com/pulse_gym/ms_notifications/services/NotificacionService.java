@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.pulse_gym.lb_common.client.AuthClient;
@@ -85,6 +86,22 @@ public class NotificacionService {
      * Servicio de WhatsApp Cloud API (Meta)
      */
     private final WhatsAppCloudService whatsAppCloudService;
+
+    /**
+     * Nombre de la plantilla de Meta aprobada para el login por WhatsApp.
+     * Si esta vacío, el login por WhatsApp usa texto libre (sujeto a la
+     * ventana de 24h de WhatsApp) en vez de una plantilla aprobada.
+     */
+    @Value("${whatsapp.cloud.templates.login.nombre:}")
+    private String plantillaLoginWhatsappNombre;
+
+    /**
+     * Idioma exacto con el que quedó aprobada la plantilla de login en Meta
+     * (no necesariamente coincide con el idioma del texto, ej. "en_US"
+     * aunque el contenido esté en español).
+     */
+    @Value("${whatsapp.cloud.templates.login.idioma:en_US}")
+    private String plantillaLoginWhatsappIdioma;
 
     /**
      * Envía una notificación utilizando una plantilla con variables dinámicas.
@@ -248,6 +265,13 @@ public class NotificacionService {
                         dto.getDestinatario(),
                         asuntoFinal,
                         contenidoFinal, evento, contexto);
+                notificacion.setEstado(EnumEstadoNotificacion.ENVIADO);
+            } else if (evento == EnumEventoAsociado.LOGIN_USUARIO
+                    && plantillaLoginWhatsappNombre != null && !plantillaLoginWhatsappNombre.isBlank()) {
+                String username = String.valueOf(contexto.getOrDefault("username", ""));
+                String emailUsuario = String.valueOf(contexto.getOrDefault("email", ""));
+                whatsAppCloudService.enviarPlantilla(dto.getDestinatario(), plantillaLoginWhatsappNombre,
+                        plantillaLoginWhatsappIdioma, List.of(username, emailUsuario));
                 notificacion.setEstado(EnumEstadoNotificacion.ENVIADO);
             } else {
                 whatsAppCloudService.enviarTexto(dto.getDestinatario(), contenidoFinal);
