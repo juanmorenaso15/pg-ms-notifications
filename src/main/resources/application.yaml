@@ -93,3 +93,6 @@ whatsapp:
       login:
         nombre: ${WHATSAPP_TEMPLATE_LOGIN_NOMBRE:address_update}
         idioma: ${WHATSAPP_TEMPLATE_LOGIN_IDIOMA:en_US}
+  provider: ${WHATSAPP_PROVIDER:cloud}
+  web:
+    url: ${WHATSAPP_WEB_URL:http://pg-ms-whatsapp-web:8095}

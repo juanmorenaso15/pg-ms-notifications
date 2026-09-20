@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.pulse_gym.ms_notifications.util.TelefonoUtils;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -149,10 +151,6 @@ public class WhatsAppCloudService {
      * @return Número de teléfono normalizado
      */
     private String normalizarTelefono(String telefono) {
-        String soloDigitos = telefono.replaceAll("[^0-9]", "");
-        if (soloDigitos.length() == 10) {
-            return defaultCountryCode + soloDigitos;
-        }
-        return soloDigitos;
+        return TelefonoUtils.normalizar(telefono, defaultCountryCode);
     }
 }
