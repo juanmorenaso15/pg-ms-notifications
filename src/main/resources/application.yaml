@@ -89,3 +89,10 @@ whatsapp:
     access-token: ${WHATSAPP_ACCESS_TOKEN:}
     verify-token: ${WHATSAPP_VERIFY_TOKEN:pulse_gym_webhook_secret_2026}
     default-country-code: ${WHATSAPP_DEFAULT_COUNTRY_CODE:57}
+    templates:
+      login:
+        nombre: ${WHATSAPP_TEMPLATE_LOGIN_NOMBRE:address_update}
+        idioma: ${WHATSAPP_TEMPLATE_LOGIN_IDIOMA:en_US}
+  provider: ${WHATSAPP_PROVIDER:cloud}
+  web:
+    url: ${WHATSAPP_WEB_URL:http://pg-ms-whatsapp-web:8095}

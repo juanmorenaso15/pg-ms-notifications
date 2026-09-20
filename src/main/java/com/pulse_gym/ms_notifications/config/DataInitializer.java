@@ -124,6 +124,76 @@ public class DataInitializer implements CommandLineRunner {
             logger.info("Plantilla LOGIN_USUARIO (WhatsApp) creada.");
         }
 
+        // 3b. MAINTENANCE_ALERT (Email) - el equipo entro en mantenimiento
+        if (plantillaRepository.findByEventosAsociadosContainingAndEstadoTrueAndEliminadaFalse(EnumEventoAsociado.MAINTENANCE_ALERT).isEmpty()) {
+            PlantillaNotificacion mantenimiento = new PlantillaNotificacion();
+            mantenimiento.setNombre("Equipo en Mantenimiento");
+            mantenimiento.setTitulo("Equipo en mantenimiento");
+            mantenimiento.setDescripcion("Notificacion cuando un equipo entra en mantenimiento");
+            mantenimiento.setContenido("Hola {username}! El equipo \"{nombre_equipo}\" ha entrado en mantenimiento. Estado actual: {estado_equipo}.");
+            mantenimiento.setTipoPlantilla(EnumCanalNotificacion.EMAIL);
+            mantenimiento.setEventoAsociado(EnumEventoAsociado.MAINTENANCE_ALERT);
+            mantenimiento.setEventosAsociados(Set.of(EnumEventoAsociado.MAINTENANCE_ALERT));
+            mantenimiento.setEstado(true);
+            mantenimiento.setEliminada(false);
+            mantenimiento.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
+            plantillaRepository.save(mantenimiento);
+            logger.info("Plantilla MAINTENANCE_ALERT creada.");
+        }
+
+        // 3c. MAINTENANCE_ALERT (WhatsApp)
+        if (plantillaRepository.findByEventosAsociadosContainingAndTipoPlantillaAndEstadoTrueAndEliminadaFalse(
+                EnumEventoAsociado.MAINTENANCE_ALERT, EnumCanalNotificacion.WHATSAPP).isEmpty()) {
+            PlantillaNotificacion mantenimientoWhatsapp = new PlantillaNotificacion();
+            mantenimientoWhatsapp.setNombre("Equipo en Mantenimiento WhatsApp");
+            mantenimientoWhatsapp.setTitulo("Equipo en mantenimiento");
+            mantenimientoWhatsapp.setDescripcion("Notificacion por WhatsApp cuando un equipo entra en mantenimiento");
+            mantenimientoWhatsapp.setContenido("Hola {username}! El equipo \"{nombre_equipo}\" ha entrado en mantenimiento. Estado actual: {estado_equipo}.");
+            mantenimientoWhatsapp.setTipoPlantilla(EnumCanalNotificacion.WHATSAPP);
+            mantenimientoWhatsapp.setEventoAsociado(EnumEventoAsociado.MAINTENANCE_ALERT);
+            mantenimientoWhatsapp.setEventosAsociados(Set.of(EnumEventoAsociado.MAINTENANCE_ALERT));
+            mantenimientoWhatsapp.setEstado(true);
+            mantenimientoWhatsapp.setEliminada(false);
+            mantenimientoWhatsapp.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
+            plantillaRepository.save(mantenimientoWhatsapp);
+            logger.info("Plantilla MAINTENANCE_ALERT (WhatsApp) creada.");
+        }
+
+        // 3d. EQUIPO_DANADO (Email) - se reporto una falla en un equipo
+        if (plantillaRepository.findByEventosAsociadosContainingAndEstadoTrueAndEliminadaFalse(EnumEventoAsociado.EQUIPO_DANADO).isEmpty()) {
+            PlantillaNotificacion equipoDanado = new PlantillaNotificacion();
+            equipoDanado.setNombre("Equipo Dañado");
+            equipoDanado.setTitulo("Falla reportada en un equipo");
+            equipoDanado.setDescripcion("Notificacion cuando se reporta una falla en un equipo");
+            equipoDanado.setContenido("Hola {username}! Se reporto una falla en el equipo \"{nombre_equipo}\" (urgencia: {urgencia_falla}). Descripcion: {descripcion_falla}.");
+            equipoDanado.setTipoPlantilla(EnumCanalNotificacion.EMAIL);
+            equipoDanado.setEventoAsociado(EnumEventoAsociado.EQUIPO_DANADO);
+            equipoDanado.setEventosAsociados(Set.of(EnumEventoAsociado.EQUIPO_DANADO));
+            equipoDanado.setEstado(true);
+            equipoDanado.setEliminada(false);
+            equipoDanado.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
+            plantillaRepository.save(equipoDanado);
+            logger.info("Plantilla EQUIPO_DANADO creada.");
+        }
+
+        // 3e. EQUIPO_DANADO (WhatsApp)
+        if (plantillaRepository.findByEventosAsociadosContainingAndTipoPlantillaAndEstadoTrueAndEliminadaFalse(
+                EnumEventoAsociado.EQUIPO_DANADO, EnumCanalNotificacion.WHATSAPP).isEmpty()) {
+            PlantillaNotificacion equipoDanadoWhatsapp = new PlantillaNotificacion();
+            equipoDanadoWhatsapp.setNombre("Equipo Dañado WhatsApp");
+            equipoDanadoWhatsapp.setTitulo("Falla reportada en un equipo");
+            equipoDanadoWhatsapp.setDescripcion("Notificacion por WhatsApp cuando se reporta una falla en un equipo");
+            equipoDanadoWhatsapp.setContenido("Hola {username}! Se reporto una falla en el equipo \"{nombre_equipo}\" (urgencia: {urgencia_falla}). Descripcion: {descripcion_falla}.");
+            equipoDanadoWhatsapp.setTipoPlantilla(EnumCanalNotificacion.WHATSAPP);
+            equipoDanadoWhatsapp.setEventoAsociado(EnumEventoAsociado.EQUIPO_DANADO);
+            equipoDanadoWhatsapp.setEventosAsociados(Set.of(EnumEventoAsociado.EQUIPO_DANADO));
+            equipoDanadoWhatsapp.setEstado(true);
+            equipoDanadoWhatsapp.setEliminada(false);
+            equipoDanadoWhatsapp.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
+            plantillaRepository.save(equipoDanadoWhatsapp);
+            logger.info("Plantilla EQUIPO_DANADO (WhatsApp) creada.");
+        }
+
         // 3. WELCOME
         if (plantillaRepository.findByEventosAsociadosContainingAndEstadoTrueAndEliminadaFalse(EnumEventoAsociado.WELCOME).isEmpty()) {
             PlantillaNotificacion welcome = new PlantillaNotificacion();
@@ -248,28 +318,29 @@ public class DataInitializer implements CommandLineRunner {
             logger.info("Diseño PROMOTION creado.");
         }
 
-        // Achievement
-        if (disenoRepository.findByEventoAsociadoAndEliminadoFalseAndActivoTrue(EnumEventoAsociado.ACHIEVEMENT).isEmpty()) {
-            PlantillaDisenoEmail logro = new PlantillaDisenoEmail();
-            logro.setNombre("logro");
-            logro.setEventoAsociado(EnumEventoAsociado.ACHIEVEMENT);
-            logro.setCanal(EnumCanalNotificacion.EMAIL);
-            logro.setColorPrincipal("#d4af37");
-            logro.setColorSecundario("#f4d03f");
-            logro.setColorTextoHeader("#ffffff");
-            logro.setTituloHeader("Pulse Gym");
-            logro.setSubtituloHeader("¡Felicitaciones!");
-            logro.setColorFondoContenido("#ffffff");
-            logro.setColorTextoContenido("#5d6d7e");
-            logro.setColorFondoFooter("#f8f9fc");
-            logro.setColorTextoFooter("#9aabbb");
-            logro.setTextoFooter("© 2026 Pulse Gym - Todos los derechos reservados");
-            logro.setTextoFooterSecundario("Este es un mensaje automático, por favor no responder a este correo");
-            logro.setActivo(true);
-            logro.setEliminado(false);
-            logro.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
-            disenoRepository.save(logro);
-            logger.info("Diseño ACHIEVEMENT creado.");
+        // Equipo dañado (reemplaza el diseño de ACHIEVEMENT, que no tenia
+        // plantilla de contenido ni ningun microservicio que disparara el evento)
+        if (disenoRepository.findByEventoAsociadoAndEliminadoFalseAndActivoTrue(EnumEventoAsociado.EQUIPO_DANADO).isEmpty()) {
+            PlantillaDisenoEmail equipoDanado = new PlantillaDisenoEmail();
+            equipoDanado.setNombre("equipo_danado");
+            equipoDanado.setEventoAsociado(EnumEventoAsociado.EQUIPO_DANADO);
+            equipoDanado.setCanal(EnumCanalNotificacion.EMAIL);
+            equipoDanado.setColorPrincipal("#c0392b");
+            equipoDanado.setColorSecundario("#e74c3c");
+            equipoDanado.setColorTextoHeader("#ffffff");
+            equipoDanado.setTituloHeader("Pulse Gym");
+            equipoDanado.setSubtituloHeader("Falla reportada");
+            equipoDanado.setColorFondoContenido("#ffffff");
+            equipoDanado.setColorTextoContenido("#5d6d7e");
+            equipoDanado.setColorFondoFooter("#f8f9fc");
+            equipoDanado.setColorTextoFooter("#9aabbb");
+            equipoDanado.setTextoFooter("© 2026 Pulse Gym - Todos los derechos reservados");
+            equipoDanado.setTextoFooterSecundario("Este es un mensaje automático, por favor no responder a este correo");
+            equipoDanado.setActivo(true);
+            equipoDanado.setEliminado(false);
+            equipoDanado.setFechaCreacion(com.pulse_gym.lb_common.util.FechaUtils.ahoraColombia());
+            disenoRepository.save(equipoDanado);
+            logger.info("Diseño EQUIPO_DANADO creado.");
         }
 
         // Payment reminder

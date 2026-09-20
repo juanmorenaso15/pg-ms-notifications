@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.pulse_gym.lb_common.client.AuthClient;
@@ -85,6 +86,35 @@ public class NotificacionService {
      * Servicio de WhatsApp Cloud API (Meta)
      */
     private final WhatsAppCloudService whatsAppCloudService;
+
+    /**
+     * Servicio de WhatsApp no oficial (WhatsApp Web / Selenium)
+     */
+    private final WhatsAppWebService whatsAppWebService;
+
+    /**
+     * Proveedor de WhatsApp a usar: "cloud" (API oficial de Meta) o "web"
+     * (WhatsApp Web no oficial, mientras no este lista la verificacion de
+     * negocio en Meta).
+     */
+    @Value("${whatsapp.provider:cloud}")
+    private String whatsappProvider;
+
+    /**
+     * Nombre de la plantilla de Meta aprobada para el login por WhatsApp.
+     * Si esta vacío, el login por WhatsApp usa texto libre (sujeto a la
+     * ventana de 24h de WhatsApp) en vez de una plantilla aprobada.
+     */
+    @Value("${whatsapp.cloud.templates.login.nombre:}")
+    private String plantillaLoginWhatsappNombre;
+
+    /**
+     * Idioma exacto con el que quedó aprobada la plantilla de login en Meta
+     * (no necesariamente coincide con el idioma del texto, ej. "en_US"
+     * aunque el contenido esté en español).
+     */
+    @Value("${whatsapp.cloud.templates.login.idioma:en_US}")
+    private String plantillaLoginWhatsappIdioma;
 
     /**
      * Envía una notificación utilizando una plantilla con variables dinámicas.
@@ -250,7 +280,7 @@ public class NotificacionService {
                         contenidoFinal, evento, contexto);
                 notificacion.setEstado(EnumEstadoNotificacion.ENVIADO);
             } else {
-                whatsAppCloudService.enviarTexto(dto.getDestinatario(), contenidoFinal);
+                enviarWhatsApp(dto.getDestinatario(), evento, contenidoFinal, contexto);
                 notificacion.setEstado(EnumEstadoNotificacion.ENVIADO);
             }
 
@@ -262,6 +292,38 @@ public class NotificacionService {
             notificacionRepository.save(notificacion);
             throw new RuntimeException("Error al enviar notificacion: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Envía un WhatsApp usando el proveedor configurado. Con el proveedor
+     * "web" (no oficial) siempre se manda texto libre, ya que ese canal no
+     * maneja plantillas aprobadas por Meta. Con el proveedor "cloud" (Meta),
+     * se usa una plantilla aprobada para LOGIN_USUARIO si hay una
+     * configurada, y texto libre para el resto de eventos.
+     *
+     * @param destinatario   Teléfono destino
+     * @param evento         Evento que origina el envío
+     * @param contenidoFinal Contenido ya renderizado (usado como texto libre)
+     * @param contexto       Contexto con variables del usuario (username, email, etc.)
+     */
+    private void enviarWhatsApp(String destinatario, EnumEventoAsociado evento,
+            String contenidoFinal, Map<String, Object> contexto) {
+
+        if ("web".equalsIgnoreCase(whatsappProvider)) {
+            whatsAppWebService.enviarTexto(destinatario, contenidoFinal);
+            return;
+        }
+
+        if (evento == EnumEventoAsociado.LOGIN_USUARIO
+                && plantillaLoginWhatsappNombre != null && !plantillaLoginWhatsappNombre.isBlank()) {
+            String username = String.valueOf(contexto.getOrDefault("username", ""));
+            String emailUsuario = String.valueOf(contexto.getOrDefault("email", ""));
+            whatsAppCloudService.enviarPlantilla(destinatario, plantillaLoginWhatsappNombre,
+                    plantillaLoginWhatsappIdioma, List.of(username, emailUsuario));
+            return;
+        }
+
+        whatsAppCloudService.enviarTexto(destinatario, contenidoFinal);
     }
 
     /**
