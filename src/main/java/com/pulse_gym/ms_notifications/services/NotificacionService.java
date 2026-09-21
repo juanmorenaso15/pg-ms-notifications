@@ -9,6 +9,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.pulse_gym.lb_common.client.AuthClient;
@@ -200,6 +201,7 @@ public class NotificacionService {
      * @throws RuntimeException Si no existe ninguna plantilla activa para el evento
      *                          especificado
      */
+    @Async
     @Transactional
     public void enviarNotificacionPorEvento(EnvioEventoNotificacionDTO request) {
         logger.info("Buscando plantillas para evento: {} y usuario: {}", request.getEvento(), request.getUsuarioId());
@@ -210,7 +212,7 @@ public class NotificacionService {
         if (plantillas.isEmpty()) {
             logger.error("No existe plantilla activa para el evento: {} - usuario: {}", request.getEvento(),
                     request.getUsuarioId());
-            throw new RuntimeException("No existe plantilla activa para el evento: " + request.getEvento());
+            return;
         }
 
         for (PlantillaNotificacion plantilla : plantillas) {
@@ -227,6 +229,51 @@ public class NotificacionService {
                 logger.error("Error al enviar notificacion con plantilla {} (canal {}) para evento {}: {}",
                         plantilla.getIdPlantilla(), plantilla.getTipoPlantilla(), request.getEvento(),
                         e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Envia un evento de notificacion a todos los usuarios del sistema que
+     * tengan un numero de telefono registrado en su perfil (p.ej. avisos de
+     * equipos dañados o en mantenimiento, que le interesan a todo el mundo y
+     * no a un usuario en particular).
+     *
+     * @param evento               Evento que dispara la notificacion
+     * @param variablesAdicionales Variables adicionales para la plantilla
+     */
+    @Async
+    public void enviarNotificacionATodosConTelefono(EnumEventoAsociado evento,
+            Map<String, Object> variablesAdicionales) {
+        List<UsuarioPerfilResponseDTO> perfiles;
+        try {
+            perfiles = usuarioClient.obtenerTodosConTelefonoInterno();
+        } catch (Exception e) {
+            logger.error("No se pudo obtener la lista de usuarios para la notificacion masiva del evento {}: {}",
+                    evento, e.getMessage());
+            return;
+        }
+
+        if (perfiles == null) {
+            return;
+        }
+
+        for (UsuarioPerfilResponseDTO perfil : perfiles) {
+            if (perfil.getTelefono() == null || perfil.getTelefono().isBlank()) {
+                continue;
+            }
+            try {
+                EnvioEventoNotificacionDTO dto = new EnvioEventoNotificacionDTO();
+                dto.setUsuarioId(perfil.getIdUsuario());
+                dto.setEvento(evento);
+                dto.setVariablesAdicionales(variablesAdicionales);
+                // Llamada directa (no via el bean/proxy): ya estamos corriendo en
+                // el hilo de fondo de este metodo @Async, asi que no hace falta
+                // (ni ayudaria) otro salto asincrono por cada usuario.
+                enviarNotificacionPorEvento(dto);
+            } catch (Exception e) {
+                logger.error("Error enviando notificacion masiva del evento {} al usuario {}: {}",
+                        evento, perfil.getIdUsuario(), e.getMessage());
             }
         }
     }
