@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pulse_gym.lb_common.dto.EnvioEventoMasivoDTO;
 import com.pulse_gym.lb_common.dto.EnvioEventoNotificacionDTO;
 import com.pulse_gym.lb_common.dto.VerificarPreferenciaRequestDTO;
 import com.pulse_gym.lb_common.dto.VerificarPreferenciaResponseDTO;
@@ -79,11 +80,37 @@ public class NotificacionInternoController {
     public ResponseEntity<Map<String, Object>> enviarPorEvento(
             @Valid @RequestBody EnvioEventoNotificacionDTO request) {
 
+        // enviarNotificacionPorEvento es @Async: esta llamada retorna de inmediato
+        // y el envio real (render + email + whatsapp, que puede tardar varios
+        // segundos) ocurre en un hilo de fondo. Asi ningun microservicio que
+        // dispare un evento (auth, operation, etc.) queda bloqueado esperando.
         notificacionService.enviarNotificacionPorEvento(request);
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
-        response.put("message", "Notificacion enviada por evento");
+        response.put("message", "Notificacion encolada para envio");
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Envia una notificacion automatica a todos los usuarios del sistema que
+     * tengan un numero de telefono registrado (p.ej. avisos de equipos que le
+     * interesan a todo el mundo, no a un usuario en particular). Al igual que
+     * /enviar-evento, retorna de inmediato: el envio real ocurre en un hilo
+     * de fondo.
+     *
+     * @param request DTO con el evento y las variables adicionales
+     * @return ResponseEntity con un mapa que indica que la notificacion quedo encolada
+     */
+    @PostMapping("/enviar-evento-masivo")
+    public ResponseEntity<Map<String, Object>> enviarPorEventoMasivo(
+            @Valid @RequestBody EnvioEventoMasivoDTO request) {
+
+        notificacionService.enviarNotificacionATodosConTelefono(request.getEvento(), request.getVariablesAdicionales());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Notificacion masiva encolada para envio");
         return ResponseEntity.ok(response);
     }
 }
